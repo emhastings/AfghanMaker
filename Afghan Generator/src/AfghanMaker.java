@@ -1,10 +1,12 @@
 /**
- * Emily Hastings
- * 10/21/2016
+ * @author Emily Hastings
+ * @version 10/23/2016
  * 
  * Weighted random afghan layout generator.
  * 
- * TODO:  force the colored squares to actually be square
+ * TODO:  Read in colors, quantities, dimensions from user.
+ * TODO:  Save previous settings-- maybe in an XML document?
+ * TODO:  Refactor
  * 
  */
 
@@ -36,7 +38,6 @@ import javax.swing.border.TitledBorder;
 public class AfghanMaker implements ActionListener {
 
     private static int numColors;
-    private static JButton button;
 
     private String mesg;
     private Map<Color, Integer> squareQuantities;
@@ -111,15 +112,12 @@ public class AfghanMaker implements ActionListener {
     }
 
     public void createAndShowGUI()  {
-        //TODO: remove these  
+        //TODO: remove these once dialogues work
         numColors = 6;
         length = 25;
         width = 20;
 
-
         Color[][] squares = getGrid(length,width);
-
-        //TODO:  open color chooser/ quantity dialogue?
 
         //create gui
         JFrame window = new JFrame("AfghanMaker");
@@ -210,18 +208,6 @@ public class AfghanMaker implements ActionListener {
 
         dimPanel.add(chooser2, c4);
 
-
-        //JLabel widthLab = new JLabel("Width");
-        /*GridBagConstraints c4 = new GridBagConstraints();
-        c4.fill = GridBagConstraints.HORIZONTAL;
-        c4.gridx = 1;
-        c4.gridy = 1;
-        //c2.gridwidth = 2;
-        //c4.ipady=5;*/
-        //inputPanel.add(width, c4);      
-        //dimPanel.add(width);
-
-
         //assemble top Panel
         JPanel topPanel = new JPanel();
         topPanel.setBorder(new EmptyBorder(0, 0, 10, 0));
@@ -230,21 +216,8 @@ public class AfghanMaker implements ActionListener {
         window.add(topPanel, BorderLayout.NORTH);
 
         //panel to display generated afghan
-        JPanel ghanPanel = new JPanel();
-        ghanPanel.setLayout(new GridLayout(length, width));
-        Dimension d = new Dimension(25,25);
-        for (int i=0; i<length; i++)  {
-            for (int j=0; j<width; j++)  {
-                JLabel lab = new JLabel("\t");
-                lab.setPreferredSize(d);
-                lab.setLayout(new SquareLayout());
-                lab.setBackground(squares[j][i]);
-                lab.setOpaque(true);
-                lab.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-                ghanPanel.add(lab);
-            }
-        }
-        window.add(ghanPanel, BorderLayout.CENTER);
+        JPanel ghanPanel = new AfghanPanel(length, width, squares);
+        window.add(ghanPanel, BorderLayout.CENTER);        
 
         //bottom panel
         JPanel bottomPanel = new JPanel();
