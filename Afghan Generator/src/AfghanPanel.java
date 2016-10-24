@@ -36,7 +36,6 @@ public class AfghanPanel extends JPanel {
         }
     }
 
-
     public class Cell extends JLabel {
 
         public Cell(Color background) {

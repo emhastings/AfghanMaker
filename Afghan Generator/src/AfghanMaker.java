@@ -18,15 +18,19 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JColorChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -37,25 +41,48 @@ import javax.swing.border.TitledBorder;
 
 public class AfghanMaker implements ActionListener {
 
-    private static int numColors;
+    private final int DEFAULT_LENGTH = 20;
+    private final int DEFAULT_WIDTH = 15;
 
+    private int numColors;
     private String mesg;
     private Map<Color, Integer> squareQuantities;
     private int numSquares;
     private int length;
     private int width;
 
+    private JFrame window;
+    private JPanel colorPanel;
+    private JPanel innerPanel;
+    private JButton colorButton;
+    private JButton generateButton;
+    private JButton restart;
+    private JPanel ghanPanel;
+    
+    private JLabel noColors;
+    private JLabel noQuantity;
+
 
     public AfghanMaker()  {
+        noColors = new JLabel("No colors");
+        noQuantity = new JLabel("\t");
+        resetData();
+    }
+
+    public void resetData()  {
         mesg = "";
         numSquares = 0;
-        length = 0;
-        width = 0;
+        length = DEFAULT_LENGTH;
+        width = DEFAULT_WIDTH;
         squareQuantities = new HashMap<Color, Integer>();
     }
 
-    public void setColorsAndQuantities()  {
+    public void setFallColorsAndQuantities()  {
         //TODO:  read colors and quantities in from chooser 
+        numColors = 6;
+        length = 25;
+        width = 20;
+
         squareQuantities.put(new Color(183,26,26), 50);  //red
         squareQuantities.put(new Color(218,165,32), 10);  //yellow
         squareQuantities.put(new Color(204,92,17), 20);  //orange
@@ -64,12 +91,12 @@ public class AfghanMaker implements ActionListener {
         squareQuantities.put(new Color(192,241,34), 30);  //light green
     }
 
-    public Color[][] getGrid(int l, int w) {
+    public Color[][] getGrid() {
 
-        Color[][] retVal = new Color[w][l];       
-        setColorsAndQuantities();        
+        Color[][] retVal = new Color[width][length]; 
         ArrayList<Color> squares = new ArrayList<Color>();
 
+        //populate list of squares
         Set<Color> colors = squareQuantities.keySet();
         for (Color color : colors)  {
             int count = squareQuantities.get(color);
@@ -79,19 +106,20 @@ public class AfghanMaker implements ActionListener {
             }
         }
 
-        //populate grid
-        for (int r=0; r<l; r++)  {  
-            for (int c=0; c<w; c++)  {
+        //populate grid with default color
+        for (int r=0; r<length; r++)  {  
+            for (int c=0; c<width; c++)  {
                 retVal[c][r] = Color.GRAY;
             }
         }
 
+        //add squares to grid
         Random rand = new Random();
         int n = squares.size();
 
-        for (int r=0; r<l; r++)  { 
+        for (int r=0; r<length; r++)  { 
             int c=0;
-            while (n>0 && c<w)  {
+            while (n>0 && c<width)  {
                 //get the next color
                 int item = rand.nextInt(n); 
                 Color color = squares.get(item);
@@ -103,24 +131,22 @@ public class AfghanMaker implements ActionListener {
             }
         }
 
-        if (numSquares < l*w)
-            mesg = "You need to make " + (l*w - numSquares) + " more squares for this size of afghan.";
+        //set message
+        if (numSquares < length*width)
+            mesg = "You need to make " + (length*width - numSquares) + " more squares for this size of afghan.";
         else
-            mesg = "You will have " + (numSquares - l*w) + " squares left over."; 
+            mesg = "You will have " + (numSquares - length*width) + " squares left over."; 
 
         return retVal;
     }
 
-    public void createAndShowGUI()  {
-        //TODO: remove these once dialogues work
-        numColors = 6;
-        length = 25;
-        width = 20;
+    public void createAndShowGUI()  {        
 
-        Color[][] squares = getGrid(length,width);
+        setFallColorsAndQuantities();  
+        Color[][] squares = getGrid();
 
         //create gui
-        JFrame window = new JFrame("AfghanMaker");
+        window = new JFrame("AfghanMaker");
 
         //set up window
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -129,10 +155,10 @@ public class AfghanMaker implements ActionListener {
         window.setVisible(true);
 
         //color panel
-        JPanel colorPanel = new JPanel();
+        colorPanel = new JPanel();
         colorPanel.setLayout(new GridBagLayout()); 
 
-        JPanel innerPanel = new JPanel();
+        innerPanel = new JPanel();
         innerPanel.setLayout(new GridLayout(numColors+1, 2));
 
         TitledBorder title = BorderFactory.createTitledBorder(
@@ -154,22 +180,22 @@ public class AfghanMaker implements ActionListener {
         }
 
         GridBagConstraints c1 = new GridBagConstraints();
-        c1.fill = GridBagConstraints.HORIZONTAL;
+        //c1.fill = GridBagConstraints.HORIZONTAL;
         c1.gridx = 0;
         c1.gridy = 0;
         c1.ipady=5;
 
         colorPanel.add(innerPanel, c1); 
 
-        JButton chooser = new JButton("Add a color");
-        chooser.addActionListener(this);
+        colorButton = new JButton("Add a color");
+        colorButton.addActionListener(this);
 
         GridBagConstraints c2 = new GridBagConstraints();
         c2.fill = GridBagConstraints.HORIZONTAL;
         c2.gridx = 0;
         c2.gridy = 1;
 
-        colorPanel.add(chooser, c2);        
+        colorPanel.add(colorButton, c2);        
 
         //dimension panel
         JPanel dimPanel = new JPanel();
@@ -216,7 +242,7 @@ public class AfghanMaker implements ActionListener {
         window.add(topPanel, BorderLayout.NORTH);
 
         //panel to display generated afghan
-        JPanel ghanPanel = new AfghanPanel(length, width, squares);
+        ghanPanel = new AfghanPanel(length, width, squares);
         window.add(ghanPanel, BorderLayout.CENTER);        
 
         //bottom panel
@@ -228,10 +254,10 @@ public class AfghanMaker implements ActionListener {
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new GridLayout(1,2));
-        JButton generate = new JButton("Generate!");
-        generate.addActionListener(this);
-        buttonPanel.add(generate);
-        JButton restart = new JButton("Start over");
+        generateButton = new JButton("Generate!");
+        generateButton.addActionListener(this);
+        buttonPanel.add(generateButton);
+        restart = new JButton("Start over");
         restart.addActionListener(this);
         buttonPanel.add(restart);
         bottomPanel.add(buttonPanel);
@@ -240,6 +266,21 @@ public class AfghanMaker implements ActionListener {
 
         window.pack();
     }
+
+    public void redrawAfghan()  {
+        //update afghan panel
+        
+        window.remove(ghanPanel);        
+        Color[][] newSquares = getGrid();
+        AfghanPanel newPanel = new AfghanPanel(length, width, newSquares);
+        ghanPanel = newPanel;            
+        
+        window.add(ghanPanel, BorderLayout.CENTER);
+        window.revalidate();
+        window.repaint();
+    }
+    
+    
 
     public static void main(String[] args)  {
 
@@ -254,7 +295,45 @@ public class AfghanMaker implements ActionListener {
         Object source = evt.getSource();  // Object that generated 
         //   the action event.
 
-        System.out.println("Button pressed!");
+        if (source == colorButton) {  // TODO: this opens the picker and updates data, but doesn't update the color panel
+            Color newColor = JColorChooser.showDialog(colorButton, "Add a square", Color.WHITE);
+            int quantity = 10;
+            squareQuantities.put(newColor, quantity);
+
+            //update color panel
+
+
+            window.revalidate();
+            window.repaint();
+
+        }  else if (source == generateButton)  {  //this works
+            redrawAfghan();
+
+        }  else if(source== restart) {  //TODO: reset dimension.  fix color panel size.
+            resetData();
+            redrawAfghan();
+            
+            
+            innerPanel.removeAll();
+            innerPanel.setLayout(new GridLayout(numColors+1, 2));
+            innerPanel.add(new JLabel("Color", SwingConstants.CENTER));
+            innerPanel.add(new JLabel ("Quantity", SwingConstants.CENTER));
+            
+            JLabel colorLab = new JLabel("\t");
+            colorLab.setBackground(Color.GRAY);
+            colorLab.setOpaque(true);
+            colorLab.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+            innerPanel.add(colorLab);
+            innerPanel.add(new JLabel ("" + 0, SwingConstants.CENTER));
+            innerPanel.revalidate();
+            //innerPanel.add(noColors);
+            //innerPanel.add(noQuantity);
+
+            window.revalidate();
+            //window.repaint();
+
+        }  else
+            System.out.println("Button pressed!");
 
     }
 }
