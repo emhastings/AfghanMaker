@@ -7,6 +7,7 @@
  * TODO:  Read in colors, quantities, dimensions from user.
  * TODO:  Save previous settings-- maybe in an XML document?
  * TODO:  Refactor
+ * TODO:  remove preset colors
  * 
  */
 
@@ -18,26 +19,28 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
 
 public class AfghanMaker implements ActionListener {
 
@@ -60,14 +63,10 @@ public class AfghanMaker implements ActionListener {
     private JPanel ghanPanel;
     private JPanel topPanel;
     private JPanel dimPanel;
-
-    private JLabel noColors;
-    private JLabel noQuantity;
-
+    private JColorChooser jcc;
+    private JTextField quantityField;   
 
     public AfghanMaker()  {
-        noColors = new JLabel("No colors");
-        noQuantity = new JLabel("\t");
         resetData();
     }
 
@@ -311,9 +310,39 @@ public class AfghanMaker implements ActionListener {
 
         Object source = evt.getSource();  // Object that generated the action event.
 
-        if (source == colorButton) {  // TODO:  read in new quantity in dialogue
-            Color newColor = JColorChooser.showDialog(colorButton, "Add a square", Color.WHITE);
-            int quantity = 10;
+        if (source == colorButton) {
+            
+            //make color chooser dialogue
+            
+            //chooser
+            JPanel colorPanel = new JPanel();            
+            colorPanel.add(new JLabel("Select a color:"), BorderLayout.WEST); 
+            
+            jcc = new JColorChooser();
+            PreviewPane preview = new PreviewPane();
+            jcc.getSelectionModel().addChangeListener(preview);            
+            jcc.setPreviewPanel(preview);
+            colorPanel.setBorder(new EmptyBorder(10, 0, 10, 0));
+            colorPanel.add(jcc, BorderLayout.EAST);
+            
+            //input quantity
+            JPanel quantityPicker = new JPanel();
+            quantityField = new JTextField(20);
+            JLabel quantLabel = new JLabel("How many squares of this color do you have?");
+            quantityPicker.add(quantLabel, BorderLayout.WEST);
+            quantityPicker.add(quantityField, BorderLayout.EAST);
+            
+            //assemble dialogue
+            JPanel panel = new JPanel();
+            panel.add(colorPanel, BorderLayout.NORTH);
+            panel.add(quantityPicker, BorderLayout.SOUTH);            
+            JOptionPane.showMessageDialog(colorButton, panel, "Add a square", JOptionPane.PLAIN_MESSAGE);
+            
+            //get input
+            Color newColor = jcc.getColor();
+            int quantity = Integer.parseInt(quantityField.getText());
+            
+            //update data
             squareQuantities.put(newColor, quantity);
             numSquares+= quantity;
             numColors++;
@@ -321,10 +350,10 @@ public class AfghanMaker implements ActionListener {
             //update color panel
             redrawColorPanel();
 
-        }  else if (source == generateButton)  {  //this works
+        }  else if (source == generateButton)  {
             redrawAfghan();
 
-        }  else if(source== restart) {  //TODO: reset dimension. 
+        }  else if(source== restart) {  //TODO: reset dimension, redisplay message. 
             resetData();
             redrawAfghan();
             redrawColorPanel();
@@ -334,4 +363,25 @@ public class AfghanMaker implements ActionListener {
             System.out.println("Button pressed!");
 
     }
+    
+    private class PreviewPane extends JLabel implements ChangeListener  {
+        
+        public PreviewPane()  {
+            setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+            setBackground(jcc.getColor());
+            setOpaque(true);
+            setText("\t");
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            return new Dimension(50, 50);
+        
+        }
+        
+        public void stateChanged(ChangeEvent e) {
+            Color newColor = jcc.getColor();
+            setBackground(newColor);
+        }        
+    }        
 }
