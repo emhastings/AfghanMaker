@@ -4,9 +4,9 @@
  * 
  * Weighted random afghan layout generator.
  * 
- * TODO:  Read in colors, quantities, dimensions from user.
- * TODO:  Save previous settings-- maybe in an XML document?
- * TODO:  Refactor
+ * TODO:  error checking on text inputs
+ * TODO:  Save previous settings-- maybe in an XML document? -- probably for version 2
+ * TODO:  Refactor/clean up
  * TODO:  remove preset colors
  * 
  */
@@ -28,7 +28,6 @@ import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -40,7 +39,6 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
 
 public class AfghanMaker implements ActionListener {
 
