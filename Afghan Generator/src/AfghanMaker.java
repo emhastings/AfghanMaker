@@ -65,6 +65,10 @@ public class AfghanMaker implements ActionListener {
     private JPanel dimPanel;
     private JColorChooser jcc;
     private JTextField quantityField;   
+    private JButton dimButton;
+    private JLabel wLab;
+    private JLabel lLab;
+    private JLabel messageLabel;
 
     public AfghanMaker()  {
         resetData();
@@ -97,6 +101,7 @@ public class AfghanMaker implements ActionListener {
 
         Color[][] retVal = new Color[width][length]; 
         ArrayList<Color> squares = new ArrayList<Color>();
+        numSquares = 0;  //reset to 0
 
         //populate list of squares
         Set<Color> colors = squareQuantities.keySet();
@@ -134,10 +139,10 @@ public class AfghanMaker implements ActionListener {
         }
 
         //set message
-        if (numSquares < length*width)
-            mesg = "You need to make " + (length*width - numSquares) + " more squares for this size of afghan.";
+        if (numSquares < (length*width))
+            mesg = "You need to make " + ((length*width) - numSquares) + " more squares for this size of afghan.";
         else
-            mesg = "You will have " + (numSquares - length*width) + " squares left over."; 
+            mesg = "You will have " + (numSquares - (length*width)) + " squares left over."; 
 
         return retVal;
     }
@@ -160,41 +165,7 @@ public class AfghanMaker implements ActionListener {
         createColorPanel();
 
         //dimension panel
-        dimPanel = new JPanel();
-        dimPanel.setLayout(new GridBagLayout());
-
-        JPanel innerPanel2 = new JPanel();
-        innerPanel2.setLayout(new GridLayout(2, 2));
-
-        TitledBorder title2 = BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Afghan dimensions");
-        title2.setTitleJustification(TitledBorder.CENTER);
-        innerPanel2.setBorder(title2);
-
-        innerPanel2.add(new JLabel("Width"));
-        JLabel wLab = new JLabel(width + " squares");
-        innerPanel2.add(wLab);
-        innerPanel2.add(new JLabel("Length"));
-        JLabel lLab = new JLabel(length + " squares");
-        innerPanel2.add(lLab);
-
-        GridBagConstraints c3 = new GridBagConstraints();
-        c3.fill = GridBagConstraints.HORIZONTAL;
-        c3.gridx = 0;
-        c3.gridy = 0;
-        c3.ipady=5;
-
-        dimPanel.add(innerPanel2,  c3);
-
-        JButton chooser2 = new JButton("Choose dimensions");
-        chooser2.addActionListener(this);
-
-        GridBagConstraints c4 = new GridBagConstraints();
-        c4.fill = GridBagConstraints.HORIZONTAL;
-        c4.gridx = 0;
-        c4.gridy = 1;
-
-        dimPanel.add(chooser2, c4);
+        createDimensionPanel();
 
         //assemble top Panel
         topPanel = new JPanel();
@@ -210,9 +181,9 @@ public class AfghanMaker implements ActionListener {
         //bottom panel
         JPanel bottomPanel = new JPanel();
         bottomPanel.setLayout(new GridLayout(2,1));
-        JLabel message = new JLabel();
-        message.setText(mesg);
-        bottomPanel.add(message);
+        messageLabel = new JLabel();
+        messageLabel.setText(mesg);
+        bottomPanel.add(messageLabel);
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new GridLayout(1,2));
@@ -232,7 +203,7 @@ public class AfghanMaker implements ActionListener {
     public void redrawAfghan()  {
         //update afghan panel
 
-        window.remove(ghanPanel);        
+        window.remove(ghanPanel); 
         Color[][] newSquares = getGrid();
         AfghanPanel newPanel = new AfghanPanel(length, width, newSquares);
         ghanPanel = newPanel;            
@@ -285,17 +256,55 @@ public class AfghanMaker implements ActionListener {
 
         colorPanel.add(colorButton, c2);       
     }
-    
+
     public void redrawColorPanel()  {
         //update afghan panel
         topPanel.removeAll();        
-        
+
         createColorPanel();
         topPanel.add(colorPanel, BorderLayout.WEST);
         topPanel.add(dimPanel, BorderLayout.EAST);
-        
+
         topPanel.revalidate();
         topPanel.repaint();
+    }
+
+    public void createDimensionPanel()  {
+        dimPanel = new JPanel();
+        dimPanel.setLayout(new GridBagLayout());
+
+        JPanel innerPanel2 = new JPanel();
+        innerPanel2.setLayout(new GridLayout(2, 2));
+
+        TitledBorder title2 = BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Afghan dimensions");
+        title2.setTitleJustification(TitledBorder.CENTER);
+        innerPanel2.setBorder(title2);
+        
+        innerPanel2.add(new JLabel("Length"));
+        lLab = new JLabel(length + " squares");
+        innerPanel2.add(lLab);
+        innerPanel2.add(new JLabel("Width"));
+        wLab = new JLabel(width + " squares");
+        innerPanel2.add(wLab);
+
+        GridBagConstraints c3 = new GridBagConstraints();
+        c3.fill = GridBagConstraints.HORIZONTAL;
+        c3.gridx = 0;
+        c3.gridy = 0;
+        c3.ipady=5;
+
+        dimPanel.add(innerPanel2,  c3);
+
+        dimButton = new JButton("Choose dimensions");
+        dimButton.addActionListener(this);
+
+        GridBagConstraints c4 = new GridBagConstraints();
+        c4.fill = GridBagConstraints.HORIZONTAL;
+        c4.gridx = 0;
+        c4.gridy = 1;
+
+        dimPanel.add(dimButton, c4);
     }
 
     public static void main(String[] args)  {
@@ -306,42 +315,41 @@ public class AfghanMaker implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent evt) {
-        // TODO Auto-generated method stub
 
         Object source = evt.getSource();  // Object that generated the action event.
 
         if (source == colorButton) {
-            
+
             //make color chooser dialogue
-            
+
             //chooser
             JPanel colorPanel = new JPanel();            
             colorPanel.add(new JLabel("Select a color:"), BorderLayout.WEST); 
-            
+
             jcc = new JColorChooser();
             PreviewPane preview = new PreviewPane();
             jcc.getSelectionModel().addChangeListener(preview);            
             jcc.setPreviewPanel(preview);
             colorPanel.setBorder(new EmptyBorder(10, 0, 10, 0));
             colorPanel.add(jcc, BorderLayout.EAST);
-            
+
             //input quantity
             JPanel quantityPicker = new JPanel();
             quantityField = new JTextField(20);
             JLabel quantLabel = new JLabel("How many squares of this color do you have?");
             quantityPicker.add(quantLabel, BorderLayout.WEST);
             quantityPicker.add(quantityField, BorderLayout.EAST);
-            
+
             //assemble dialogue
             JPanel panel = new JPanel();
             panel.add(colorPanel, BorderLayout.NORTH);
             panel.add(quantityPicker, BorderLayout.SOUTH);            
             JOptionPane.showMessageDialog(colorButton, panel, "Add a square", JOptionPane.PLAIN_MESSAGE);
-            
+
             //get input
             Color newColor = jcc.getColor();
             int quantity = Integer.parseInt(quantityField.getText());
-            
+
             //update data
             squareQuantities.put(newColor, quantity);
             numSquares+= quantity;
@@ -350,22 +358,70 @@ public class AfghanMaker implements ActionListener {
             //update color panel
             redrawColorPanel();
 
+            //update message
+            messageLabel.setText(mesg);     
+
+            //update afghan
+            generateButton.doClick();
+
         }  else if (source == generateButton)  {
             redrawAfghan();
 
-        }  else if(source== restart) {  //TODO: reset dimension, redisplay message. 
+        }  else if(source== restart) {
             resetData();
             redrawAfghan();
             redrawColorPanel();
-            
+            //update dimension panel
+            wLab.setText(width + " squares");
+            lLab.setText(length + " squares");
+            //update message
+            messageLabel.setText(mesg);     
 
-        }  else
-            System.out.println("Button pressed!");
+
+        }  else  {  //dimension set
+            //make dimension chooser dialogue                       
+
+            //input length
+            JPanel lengthPanel = new JPanel();
+            JTextField lengthField = new JTextField(20);
+            JLabel lengthLabel = new JLabel("Length");
+            lengthPanel.add(lengthLabel, BorderLayout.WEST);
+            lengthPanel.add(lengthField, BorderLayout.EAST);
+
+            //input width
+            JPanel widthPanel = new JPanel();
+            JTextField widthField = new JTextField(20);
+            JLabel widthLabel = new JLabel("Width");
+            widthPanel.add(widthLabel, BorderLayout.WEST);
+            widthPanel.add(widthField, BorderLayout.EAST);
+
+            //assemble dialogue
+            JPanel panel = new JPanel();
+            panel.add(new JLabel("Enter your afghan's dimensions:"), BorderLayout.NORTH); 
+            panel.add(lengthPanel, BorderLayout.CENTER);
+            panel.add(widthPanel, BorderLayout.SOUTH);            
+            JOptionPane.showMessageDialog(dimButton, panel, "Enter dimensions", JOptionPane.PLAIN_MESSAGE);
+
+            //get input and update data            
+            length = Integer.parseInt(lengthField.getText());
+            width = Integer.parseInt(widthField.getText());
+
+            //update dimension panel
+            wLab.setText(width + " squares");
+            lLab.setText(length + " squares");
+
+            //update afghan
+            generateButton.doClick();
+
+            //update message
+            messageLabel.setText(mesg);     
+        }
+
 
     }
-    
+
     private class PreviewPane extends JLabel implements ChangeListener  {
-        
+
         public PreviewPane()  {
             setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
             setBackground(jcc.getColor());
@@ -376,9 +432,9 @@ public class AfghanMaker implements ActionListener {
         @Override
         public Dimension getPreferredSize() {
             return new Dimension(50, 50);
-        
+
         }
-        
+
         public void stateChanged(ChangeEvent e) {
             Color newColor = jcc.getColor();
             setBackground(newColor);
