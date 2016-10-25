@@ -58,7 +58,9 @@ public class AfghanMaker implements ActionListener {
     private JButton generateButton;
     private JButton restart;
     private JPanel ghanPanel;
-    
+    private JPanel topPanel;
+    private JPanel dimPanel;
+
     private JLabel noColors;
     private JLabel noQuantity;
 
@@ -75,6 +77,7 @@ public class AfghanMaker implements ActionListener {
         length = DEFAULT_LENGTH;
         width = DEFAULT_WIDTH;
         squareQuantities = new HashMap<Color, Integer>();
+        numColors = 0;
     }
 
     public void setFallColorsAndQuantities()  {
@@ -155,6 +158,92 @@ public class AfghanMaker implements ActionListener {
         window.setVisible(true);
 
         //color panel
+        createColorPanel();
+
+        //dimension panel
+        dimPanel = new JPanel();
+        dimPanel.setLayout(new GridBagLayout());
+
+        JPanel innerPanel2 = new JPanel();
+        innerPanel2.setLayout(new GridLayout(2, 2));
+
+        TitledBorder title2 = BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Afghan dimensions");
+        title2.setTitleJustification(TitledBorder.CENTER);
+        innerPanel2.setBorder(title2);
+
+        innerPanel2.add(new JLabel("Width"));
+        JLabel wLab = new JLabel(width + " squares");
+        innerPanel2.add(wLab);
+        innerPanel2.add(new JLabel("Length"));
+        JLabel lLab = new JLabel(length + " squares");
+        innerPanel2.add(lLab);
+
+        GridBagConstraints c3 = new GridBagConstraints();
+        c3.fill = GridBagConstraints.HORIZONTAL;
+        c3.gridx = 0;
+        c3.gridy = 0;
+        c3.ipady=5;
+
+        dimPanel.add(innerPanel2,  c3);
+
+        JButton chooser2 = new JButton("Choose dimensions");
+        chooser2.addActionListener(this);
+
+        GridBagConstraints c4 = new GridBagConstraints();
+        c4.fill = GridBagConstraints.HORIZONTAL;
+        c4.gridx = 0;
+        c4.gridy = 1;
+
+        dimPanel.add(chooser2, c4);
+
+        //assemble top Panel
+        topPanel = new JPanel();
+        topPanel.setBorder(new EmptyBorder(0, 0, 10, 0));
+        topPanel.add(colorPanel, BorderLayout.WEST);
+        topPanel.add(dimPanel, BorderLayout.EAST);
+        window.add(topPanel, BorderLayout.NORTH);
+
+        //panel to display generated afghan
+        ghanPanel = new AfghanPanel(length, width, squares);
+        window.add(ghanPanel, BorderLayout.CENTER);        
+
+        //bottom panel
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.setLayout(new GridLayout(2,1));
+        JLabel message = new JLabel();
+        message.setText(mesg);
+        bottomPanel.add(message);
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new GridLayout(1,2));
+        generateButton = new JButton("Generate!");
+        generateButton.addActionListener(this);
+        buttonPanel.add(generateButton);
+        restart = new JButton("Start over");
+        restart.addActionListener(this);
+        buttonPanel.add(restart);
+        bottomPanel.add(buttonPanel);
+        window.add(bottomPanel, BorderLayout.SOUTH);
+
+
+        window.pack();
+    }
+
+    public void redrawAfghan()  {
+        //update afghan panel
+
+        window.remove(ghanPanel);        
+        Color[][] newSquares = getGrid();
+        AfghanPanel newPanel = new AfghanPanel(length, width, newSquares);
+        ghanPanel = newPanel;            
+
+        window.add(ghanPanel, BorderLayout.CENTER);
+        window.revalidate();
+        window.repaint();
+    }
+
+    public void createColorPanel()  {
         colorPanel = new JPanel();
         colorPanel.setLayout(new GridBagLayout()); 
 
@@ -195,92 +284,20 @@ public class AfghanMaker implements ActionListener {
         c2.gridx = 0;
         c2.gridy = 1;
 
-        colorPanel.add(colorButton, c2);        
-
-        //dimension panel
-        JPanel dimPanel = new JPanel();
-        dimPanel.setLayout(new GridBagLayout());
-
-        JPanel innerPanel2 = new JPanel();
-        innerPanel2.setLayout(new GridLayout(2, 2));
-
-        TitledBorder title2 = BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Afghan dimensions");
-        title2.setTitleJustification(TitledBorder.CENTER);
-        innerPanel2.setBorder(title2);
-
-        innerPanel2.add(new JLabel("Width"));
-        JLabel wLab = new JLabel(width + " squares");
-        innerPanel2.add(wLab);
-        innerPanel2.add(new JLabel("Length"));
-        JLabel lLab = new JLabel(length + " squares");
-        innerPanel2.add(lLab);
-
-        GridBagConstraints c3 = new GridBagConstraints();
-        c3.fill = GridBagConstraints.HORIZONTAL;
-        c3.gridx = 0;
-        c3.gridy = 0;
-        c3.ipady=5;
-
-        dimPanel.add(innerPanel2,  c3);
-
-        JButton chooser2 = new JButton("Choose dimensions");
-        chooser2.addActionListener(this);
-
-        GridBagConstraints c4 = new GridBagConstraints();
-        c4.fill = GridBagConstraints.HORIZONTAL;
-        c4.gridx = 0;
-        c4.gridy = 1;
-
-        dimPanel.add(chooser2, c4);
-
-        //assemble top Panel
-        JPanel topPanel = new JPanel();
-        topPanel.setBorder(new EmptyBorder(0, 0, 10, 0));
+        colorPanel.add(colorButton, c2);       
+    }
+    
+    public void redrawColorPanel()  {
+        //update afghan panel
+        topPanel.removeAll();        
+        
+        createColorPanel();
         topPanel.add(colorPanel, BorderLayout.WEST);
         topPanel.add(dimPanel, BorderLayout.EAST);
-        window.add(topPanel, BorderLayout.NORTH);
-
-        //panel to display generated afghan
-        ghanPanel = new AfghanPanel(length, width, squares);
-        window.add(ghanPanel, BorderLayout.CENTER);        
-
-        //bottom panel
-        JPanel bottomPanel = new JPanel();
-        bottomPanel.setLayout(new GridLayout(2,1));
-        JLabel message = new JLabel();
-        message.setText(mesg);
-        bottomPanel.add(message);
-
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new GridLayout(1,2));
-        generateButton = new JButton("Generate!");
-        generateButton.addActionListener(this);
-        buttonPanel.add(generateButton);
-        restart = new JButton("Start over");
-        restart.addActionListener(this);
-        buttonPanel.add(restart);
-        bottomPanel.add(buttonPanel);
-        window.add(bottomPanel, BorderLayout.SOUTH);
-
-
-        window.pack();
-    }
-
-    public void redrawAfghan()  {
-        //update afghan panel
         
-        window.remove(ghanPanel);        
-        Color[][] newSquares = getGrid();
-        AfghanPanel newPanel = new AfghanPanel(length, width, newSquares);
-        ghanPanel = newPanel;            
-        
-        window.add(ghanPanel, BorderLayout.CENTER);
-        window.revalidate();
-        window.repaint();
+        topPanel.revalidate();
+        topPanel.repaint();
     }
-    
-    
 
     public static void main(String[] args)  {
 
@@ -292,45 +309,26 @@ public class AfghanMaker implements ActionListener {
     public void actionPerformed(ActionEvent evt) {
         // TODO Auto-generated method stub
 
-        Object source = evt.getSource();  // Object that generated 
-        //   the action event.
+        Object source = evt.getSource();  // Object that generated the action event.
 
-        if (source == colorButton) {  // TODO: this opens the picker and updates data, but doesn't update the color panel
+        if (source == colorButton) {  // TODO:  read in new quantity in dialogue
             Color newColor = JColorChooser.showDialog(colorButton, "Add a square", Color.WHITE);
             int quantity = 10;
             squareQuantities.put(newColor, quantity);
+            numSquares+= quantity;
+            numColors++;
 
             //update color panel
-
-
-            window.revalidate();
-            window.repaint();
+            redrawColorPanel();
 
         }  else if (source == generateButton)  {  //this works
             redrawAfghan();
 
-        }  else if(source== restart) {  //TODO: reset dimension.  fix color panel size.
+        }  else if(source== restart) {  //TODO: reset dimension. 
             resetData();
             redrawAfghan();
+            redrawColorPanel();
             
-            
-            innerPanel.removeAll();
-            innerPanel.setLayout(new GridLayout(numColors+1, 2));
-            innerPanel.add(new JLabel("Color", SwingConstants.CENTER));
-            innerPanel.add(new JLabel ("Quantity", SwingConstants.CENTER));
-            
-            JLabel colorLab = new JLabel("\t");
-            colorLab.setBackground(Color.GRAY);
-            colorLab.setOpaque(true);
-            colorLab.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-            innerPanel.add(colorLab);
-            innerPanel.add(new JLabel ("" + 0, SwingConstants.CENTER));
-            innerPanel.revalidate();
-            //innerPanel.add(noColors);
-            //innerPanel.add(noQuantity);
-
-            window.revalidate();
-            //window.repaint();
 
         }  else
             System.out.println("Button pressed!");
